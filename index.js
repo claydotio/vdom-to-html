@@ -1,11 +1,5 @@
 var escape = require('escape-html');
 var extend = require('xtend');
-var isVNode = require('virtual-dom/vnode/is-vnode');
-var isVText = require('virtual-dom/vnode/is-vtext');
-var isThunk = require('virtual-dom/vnode/is-thunk');
-var isWidget = require('virtual-dom/vnode/is-widget');
-var softHook = require('virtual-dom/virtual-hyperscript/hooks/soft-set-hook');
-var attrHook = require('virtual-dom/virtual-hyperscript/hooks/attribute-hook');
 var paramCase = require('param-case');
 var createAttribute = require('./create-attribute');
 var voidElements = require('./void-elements');
@@ -14,27 +8,12 @@ module.exports = toHTML;
 
 function toHTML(node, parent) {
   if (!node) return '';
-
-  if (isThunk(node)) {
-    node = node.render();
-  }
-
-  if (isWidget(node) && node.render) {
-    node = node.render();
-  }
-
-  if (isVNode(node)) {
-    return openTag(node) + tagContent(node) + closeTag(node);
-  } else if (isVText(node)) {
-    if (parent && parent.tagName.toLowerCase() === 'script') return String(node.text);
-    return escape(String(node.text));
-  }
-
-  return '';
+  else if (typeof node === 'string' || typeof node === 'number') return node;
+  return openTag(node) + tagContent(node) + closeTag(node);
 }
 
 function openTag(node) {
-  var props = node.properties;
+  var props = node.props;
   var ret = '<' + node.tagName.toLowerCase();
 
   for (var name in props) {
@@ -66,10 +45,6 @@ function openTag(node) {
       value = css.trim();
     }
 
-    if (value instanceof softHook || value instanceof attrHook) {
-      ret += ' ' + createAttribute(name, value.value, true);
-      continue;
-    }
 
     var attr = createAttribute(name, value);
     if (attr) ret += ' ' + attr;
@@ -79,7 +54,7 @@ function openTag(node) {
 }
 
 function tagContent(node) {
-  var innerHTML = node.properties.innerHTML;
+  var innerHTML = node.props.innerHTML;
   if (innerHTML != null) return innerHTML;
   else {
     var ret = '';

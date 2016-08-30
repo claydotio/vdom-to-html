@@ -20,18 +20,7 @@ module.exports = createAttribute;
  */
 
 function createAttribute(name, value, isAttribute) {
-  if (properties.hasOwnProperty(name)) {
-    if (shouldSkip(name, value)) return '';
-    name = (attributeNames[name] || name).toLowerCase();
-    var attrType = properties[name];
-    // for BOOLEAN `value` only has to be truthy
-    // for OVERLOADED_BOOLEAN `value` has to be === true
-    if ((attrType === types.BOOLEAN) ||
-        (attrType === types.OVERLOADED_BOOLEAN && value === true)) {
-      return escape(name);
-    }
-    return prefixAttribute(name) + escape(value) + '"';
-  } else if (isAttribute) {
+  if (name) {
     if (value == null) return '';
     return prefixAttribute(name) + escape(value) + '"';
   }
@@ -39,16 +28,6 @@ function createAttribute(name, value, isAttribute) {
   return null;
 }
 
-/**
- * Should skip false boolean attributes.
- */
-
-function shouldSkip(name, value) {
-  var attrType = properties[name];
-  return value == null ||
-    (attrType === types.BOOLEAN && !value) ||
-    (attrType === types.OVERLOADED_BOOLEAN && value === false);
-}
 
 /**
  * Memoizes the return value of a function that accepts one string argument.
